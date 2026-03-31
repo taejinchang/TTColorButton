@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899-12-30 00:00:00.000.875,=designide.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.882,=vclx.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.873,=G:\LIB\RADXE2\ColorButton2.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.891,=designide.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.880,=vclactnband.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.896,=vclactnband.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.899,=vclx.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.894,E:\LIB\RADXE2\ColorButton\CTJ.dproj=E:\LIB\RADXE2\ColorButton\ColorButton.dproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.888,=G:\LIB\RADXE2\ColoredButton.pas</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.894,=vcl.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.738,=rtl.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.254,=rtl.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.901,=xmlrtl.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.885,=xmlrtl.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.877,=vcl.dcp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.969,=E:\LIB\RADXE2\ColorButton\ColorButton2.pas</Transaction>
+  </Transactions>
+</BorlandProject>
