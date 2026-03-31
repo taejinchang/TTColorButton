@@ -8,12 +8,12 @@ uses
 type
   TColorButton = class(TButton)
   private
-    ShowBackColor: Boolean;
-    FCanvas      : TCanvas;
-    IsFocused    : Boolean;
-    FBackColor   : TColor;
-    FForeColor   : TColor;
-    FHoverColor  : TColor;
+    FShowBackColor: Boolean;
+    FCanvas       : TCanvas;
+    FIsFocused    : Boolean;
+    FBackColor    : TColor;
+    FForeColor    : TColor;
+    FHoverColor   : TColor;
     procedure SetBackColor(const Value: TColor);
     procedure SetForeColor(const Value: TColor);
     procedure SetHoverColor(const Value: TColor);
@@ -44,11 +44,11 @@ implementation
 constructor TColorButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  ShowBackColor := True;
-  FCanvas       := TCanvas.Create;
-  BackColor     := clBtnFace;
-  ForeColor     := clBtnText;
-  HoverColor    := clBtnFace;
+  FShowBackColor := True;
+  FCanvas        := TCanvas.Create;
+  FBackColor     := clBtnFace;
+  FForeColor     := clBtnText;
+  FHoverColor    := clBtnFace;
 end;
 
 destructor TColorButton.Destroy;
@@ -61,12 +61,12 @@ procedure TColorButton.WndProc(var Message: TMessage);
 begin
   if (Message.Msg = CM_MOUSELEAVE) then
   begin
-    ShowBackColor := True;
+    FShowBackColor := True;
     Invalidate;
-  end;
-  if (Message.Msg = CM_MOUSEENTER) then
+  end
+  else if (Message.Msg = CM_MOUSEENTER) then
   begin
-    ShowBackColor := False;
+    FShowBackColor := False;
     Invalidate;
   end;
   inherited;
@@ -75,15 +75,14 @@ end;
 procedure TColorButton.CreateParams(var Params: TCreateParams);
 begin
   inherited CreateParams(Params);
-  with Params do
-    Style := Style or BS_OWNERDRAW;
+  Params.Style := Params.Style or BS_OWNERDRAW;
 end;
 
 procedure TColorButton.SetButtonStyle(Value: Boolean);
 begin
-  if Value <> IsFocused then
+  if Value <> FIsFocused then
   begin
-    IsFocused := Value;
+    FIsFocused := Value;
     Invalidate;
   end;
 end;
@@ -161,26 +160,34 @@ end;
 procedure TColorButton.DrawButton(Rect: TRect; State: UINT);
 
 var
-  Flags, OldMode               : Longint;
-  IsDown, IsDefault, IsDisabled: Boolean;
-  OldColor                     : TColor;
-  OrgRect                      : TRect;
-  NewCaption                   : string;
+  Flags, OldMode                 : Longint;
+  IsDown, HasFocus, IsDisabled   : Boolean;
+  OldBrushColor                  : TColor;
+  OldBrushStyle                  : TBrushStyle;
+  OldPenColor                    : TColor;
+  OldPenWidth                    : Integer;
+  OriginalRect                   : TRect;
+  CaptionText                    : string;
 
 begin
-  NewCaption := Caption;
-  OrgRect    := Rect;
-  Flags      := DFCS_BUTTONPUSH or DFCS_ADJUSTRECT;
-  IsDown     := State and ODS_SELECTED <> 0;
-  IsDisabled := State and ODS_DISABLED <> 0;
-  IsDefault  := State and ODS_FOCUS <> 0;
+  CaptionText  := Caption;
+  OriginalRect := Rect;
+  Flags        := DFCS_BUTTONPUSH or DFCS_ADJUSTRECT;
+  IsDown       := State and ODS_SELECTED <> 0;
+  IsDisabled   := State and ODS_DISABLED <> 0;
+  HasFocus     := State and ODS_FOCUS <> 0;
 
   if IsDown then
     Flags := Flags or DFCS_PUSHED;
   if IsDisabled then
     Flags := Flags or DFCS_INACTIVE;
 
-  if (IsFocused or IsDefault) then
+  OldBrushStyle := FCanvas.Brush.Style;
+  OldBrushColor := FCanvas.Brush.Color;
+  OldPenColor   := FCanvas.Pen.Color;
+  OldPenWidth   := FCanvas.Pen.Width;
+
+  if (FIsFocused or HasFocus) then
   begin
     FCanvas.Pen.Color   := clWindowFrame;
     FCanvas.Pen.Width   := 1;
@@ -193,6 +200,7 @@ begin
   begin
     FCanvas.Pen.Color   := clBtnShadow;
     FCanvas.Pen.Width   := 1;
+    FCanvas.Brush.Style := bsSolid;
     FCanvas.Brush.Color := clBtnFace;
     FCanvas.Rectangle(Rect.Left, Rect.Top, Rect.Right, Rect.Bottom);
     InflateRect(Rect, -1, -1);
@@ -202,41 +210,44 @@ begin
     DrawFrameControl(FCanvas.Handle, Rect, DFC_BUTTON, Flags);
   end;
 
+  // Restore brush style before FillRect so the fill is applied correctly
+  FCanvas.Brush.Style := OldBrushStyle;
+
   if IsDown then
     OffsetRect(Rect, 1, 1);
 
-  OldColor := FCanvas.Brush.Color;
-  if ShowBackColor then
+  if FShowBackColor then
     FCanvas.Brush.Color := BackColor
   else
     FCanvas.Brush.Color := HoverColor;
   FCanvas.FillRect(Rect);
-  FCanvas.Brush.Color := OldColor;
-  OldMode             := SetBkMode(FCanvas.Handle, TRANSPARENT);
-  FCanvas.Font.Color  := ForeColor;
+
+  OldMode            := SetBkMode(FCanvas.Handle, TRANSPARENT);
+  FCanvas.Font.Color := ForeColor;
   if IsDisabled then
-//    DrawState(FCanvas.Handle, FCanvas.Brush.Handle, nil, Integer(NewCaption), 0,
-//      ((Rect.Right - Rect.Left) - FCanvas.TextWidth(NewCaption)) div 2,
-//      ((Rect.Bottom - Rect.Top) - FCanvas.TextHeight(NewCaption)) div 2, 0, 0, DST_TEXT or DSS_DISABLED)
-    DrawState(FCanvas.Handle, FCanvas.Brush.Handle, nil, NativeInt(NewCaption), 0,
-      ((Rect.Right - Rect.Left) - FCanvas.TextWidth(NewCaption)) div 2,
-      ((Rect.Bottom - Rect.Top) - FCanvas.TextHeight(NewCaption)) div 2, 0, 0, DST_TEXT or DSS_DISABLED)
+    DrawState(FCanvas.Handle, FCanvas.Brush.Handle, nil, NativeInt(CaptionText), 0,
+      ((Rect.Right - Rect.Left) - FCanvas.TextWidth(CaptionText)) div 2,
+      ((Rect.Bottom - Rect.Top) - FCanvas.TextHeight(CaptionText)) div 2, 0, 0, DST_TEXT or DSS_DISABLED)
   else
   begin
     InflateRect(Rect, -4, -4);
-    DrawText(FCanvas.Handle, PChar(NewCaption), -1, Rect, DT_WORDBREAK or DT_CENTER);
+    DrawText(FCanvas.Handle, PChar(CaptionText), -1, Rect, DT_WORDBREAK or DT_CENTER);
   end;
 
   SetBkMode(FCanvas.Handle, OldMode);
 
-  if (IsFocused and IsDefault) then
+  if (FIsFocused and HasFocus) then
   begin
-    Rect := OrgRect;
+    Rect := OriginalRect;
     InflateRect(Rect, -4, -4);
     FCanvas.Pen.Color   := clWindowFrame;
     FCanvas.Brush.Color := clBtnFace;
     DrawFocusRect(FCanvas.Handle, Rect);
   end;
+
+  FCanvas.Pen.Color   := OldPenColor;
+  FCanvas.Pen.Width   := OldPenWidth;
+  FCanvas.Brush.Color := OldBrushColor;
 end;
 
 procedure Register;
